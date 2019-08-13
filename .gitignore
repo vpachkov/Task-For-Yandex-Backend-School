@@ -4,3 +4,14 @@ Desktop.ini
 
 # Compiled Python files
 *.pyc
+
+# Virtual environment
+env/
+.env
+.flaskenv
+env*
+
+#Cache
+.cache/
+.pytest_cache/
+.idea/
