@@ -1,4 +1,3 @@
-from flask import jsonify
 from datetime import date
 
 
@@ -14,7 +13,7 @@ def validate_import(citizens):
     #Проверка на пустой список
 
     if len(citizens) == 0:
-        return 100
+        return 'Нет данных'
     required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"]
     for citizen in citizens:
 
@@ -35,7 +34,7 @@ def validate_import(citizens):
         #Проверка города
 
         if type(citizen['town']) == str:
-            if len(citizen['town'] == 0):
+            if len(citizen['town']) == 0:
                 return 'Ошибка в данных о пользователе'
         else:
             return 'Ошибка в данных о пользователе'
@@ -43,7 +42,7 @@ def validate_import(citizens):
         #Проверка улицы
 
         if type(citizen['street']) == str:
-            if len(citizen['street'] == 0):
+            if len(citizen['street']) == 0:
                 return 'Ошибка в данных о пользователе'
         else:
             return 'Ошибка в данных о пользователе'
@@ -51,7 +50,7 @@ def validate_import(citizens):
         #Проверка дома
 
         if type(citizen['building']) == str:
-            if len(citizen['building'] == 0):
+            if len(citizen['building']) == 0:
                 return 'Ошибка в данных о пользователе'
         else:
             return 'Ошибка в данных о пользователе'
@@ -67,7 +66,7 @@ def validate_import(citizens):
         #Проверка имени
         
         if type(citizen['name']) == str:
-            if len(citizen['name'] == 0):
+            if len(citizen['name']) == 0:
                 return 'Ошибка в данных о пользователе'
         else:
             return 'Ошибка в данных о пользователе'
@@ -75,7 +74,7 @@ def validate_import(citizens):
         #Проверка даты рождения
         
         if type(citizen['birth_date']) == str:
-            if len(citizen['birth_date'] == 0):
+            if len(citizen['birth_date']) == 0:
                 return 'Ошибка в данных о пользователе'
             if not check_date(citizen['birth_date']):
                 return 'Ошибка в данных о пользователе'
