@@ -3,6 +3,7 @@ from flask import jsonify, request
 from validators import validate_import, validate_edit_user
 from app import app
 from models import Import, User
+from serializers import serialize_user
 
 @app.route('/imports', methods=['POST'])
 def imports():
@@ -103,7 +104,7 @@ def edit_user(import_id, citizen_id):
             
         db.session.commit()
 
-        return jsonify({'data': {'status' : 'ok'}}), 200
+        return jsonify({'data': serialize_user(user)}), 200
 
     return jsonify({'data': {'error' : res}}), 400
         
