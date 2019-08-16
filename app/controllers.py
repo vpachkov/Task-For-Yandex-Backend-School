@@ -108,4 +108,10 @@ def edit_user(import_id, citizen_id):
 
     return jsonify({'data': {'error' : res}}), 400
         
-        
+@app.route('/imports/<import_id>/citizens/', methods=['GET'])
+def show_all_citizens(import_id):
+    result = {'data': []}
+    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+    for user in current_import:
+        result['data'].append(serialize_user(user))
+    return jsonify(result), 200
