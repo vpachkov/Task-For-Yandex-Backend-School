@@ -2,7 +2,7 @@ from manage import db
 
 class Import(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    users = db.relationship('User', backref='import', lazy=True)
+    users = db.relationship('User', backref='import_group', lazy=True)
 
     def __repr__(self):
         return '<Import %r>' % self.id
