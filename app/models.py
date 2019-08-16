@@ -1,8 +1,8 @@
-from manage import db
+from database import db
 
 class Import(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    users = db.relationship('User', backref='import_group', lazy=True)
+    users = db.relationship('User', backref='import_group', lazy='dynamic')
 
     def __repr__(self):
         return '<Import %r>' % self.id

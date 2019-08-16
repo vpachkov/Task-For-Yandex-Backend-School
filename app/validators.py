@@ -1,5 +1,6 @@
 from datetime import date
 
+# Функция проверки формата даты
 
 def check_date(dt):
     try:
@@ -9,93 +10,117 @@ def check_date(dt):
     except:
         return False
 
-def validate_import(citizens):
-    #Проверка на пустой список
+# Функция проверки идентификатора жителя и номера квартиры
 
+def check_citizen_id_apartment(data):
+    if type(data) == int:
+        if data < 0:
+            return False
+    else:
+        return False
+
+    return True
+
+# Функция проверки города, улицы, дома и имени 
+
+def check_town_street_building_name(data):
+    if type(data) == str:
+        if len(data) == 0:
+            return False
+    else:
+        return False
+
+    return True
+
+# Функция проверки даты рождения
+
+def check_birth_date(data):
+    if type(data) == str:
+        if len(data) == 0:
+            return False
+        if not check_date(data):
+            return False
+    else:
+        return False
+
+    return True
+
+# Функция проверки пола
+
+def check_gender(data):
+    if type(data) == str:
+        if not (data == 'male' or data == 'female'):
+            return False
+    else:
+        return False
+
+    return True
+
+# Функция проверки списка родственников
+
+def check_relatives(data):
+    if not (type(data) == list):
+        return False
+
+    return True
+
+key_to_func = {
+        'town' : check_town_street_building_name,
+        'street': check_town_street_building_name,
+        'building': check_town_street_building_name,
+        'name': check_town_street_building_name,
+        'apartment': check_citizen_id_apartment,
+        'citizen_id': check_citizen_id_apartment,
+        'birth_date': check_birth_date,
+        'gender': check_gender,
+        'relatives': check_relatives,
+}
+
+def validate_import(citizens):
     if len(citizens) == 0:
-        return 'Нет данных'
-    required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"]
+        return 'В выгрузке отсутствуют данные' # Проверка на пустой список
+
+    required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"] # Обязательные ключи
+
     for citizen in citizens:
 
-        #Проверка наличия ключей
+        # Проверка наличия ключей
     
         citizen_keys = set(citizen.keys())
         if not all(element in citizen_keys  for element in required_keys):
             return 'Не хватает данных о пользователе'
-
-        #Проверка идентификатора жителя
-
-        if type(citizen['citizen_id']) == int:
-            if citizen['citizen_id'] < 0:
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
         
-        #Проверка города
+        # Проверка всех полей
 
-        if type(citizen['town']) == str:
-            if len(citizen['town']) == 0:
+        for key in citizen.keys():
+            if not key_to_func[key](citizen[key]):
                 return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
+    
+    return 'OK' # OK, если ошибки в запросе не были найдены
 
-        #Проверка улицы
+def validate_edit_user(citizen):
 
-        if type(citizen['street']) == str:
-            if len(citizen['street']) == 0:
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
+    #Проверка на пустоту
 
-        #Проверка дома
+    if len(citizen) == 0:
+        return 'В запросе должно быть указано хотя бы одно поле'
+    
+    allowed_keys = {"town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"} # Разрешенные ключи
+    for key in citizen.keys():
+        if not key in allowed_keys:
+            return 'В запросе присутствуют лишние поля'
 
-        if type(citizen['building']) == str:
-            if len(citizen['building']) == 0:
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
+        # Проверка поля на корректность
 
-        #Проверка номера квартиры
-
-        if type(citizen['apartment']) == int:
-            if citizen['apartment'] < 0:
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
-
-        #Проверка имени
-        
-        if type(citizen['name']) == str:
-            if len(citizen['name']) == 0:
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
-        
-        #Проверка даты рождения
-        
-        if type(citizen['birth_date']) == str:
-            if len(citizen['birth_date']) == 0:
-                return 'Ошибка в данных о пользователе'
-            if not check_date(citizen['birth_date']):
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
-
-        #Проверка пола
-        
-        if type(citizen['gender']) == str:
-            if not (citizen['gender'] == 'male' or citizen['gender'] == 'female'):
-                return 'Ошибка в данных о пользователе'
-        else:
-            return 'Ошибка в данных о пользователе'
-        
-        #Проверка родственников
-
-        if not (type(citizen['relatives']) == list):
+        if not key_to_func[key](citizen[key]):
             return 'Ошибка в данных о пользователе'
     
-    return 'OK'
-
+    return 'OK' # OK, если ошибки в запросе не были найдены
         
+
+
+    
+
+   
         
 
