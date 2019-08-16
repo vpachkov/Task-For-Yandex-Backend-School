@@ -20,5 +20,16 @@ class User(db.Model):
     gender = db.Column(db.String(6), nullable=False) #male or female
     relatives = db.Column(db.String(20))
 
+    def __init__(self, citizen_id, town, street, building, apartment, name, birth_date, gender, relatives):
+        self.citizen_id = citizen_id
+        self.town = town
+        self.street = street
+        self.building = building
+        self.apartment = apartment
+        self.name = name
+        self.birth_date = birth_date
+        self.gender = gender
+        self.relatives = relatives
+
     def __repr__(self):
         return '<User %r>' % self.citizen_id
