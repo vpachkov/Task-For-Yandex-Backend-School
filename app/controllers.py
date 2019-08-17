@@ -115,3 +115,34 @@ def show_all_citizens(import_id):
     for user in current_import:
         result['data'].append(serialize_user(user))
     return jsonify(result), 200
+
+@app.route('/imports/<import_id>/citizens/birthdays', methods=['GET'])
+def show_presents(import_id):
+    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+
+    dt = {}
+    for i in range(1,13):
+        dt[i] = {}
+    
+    for citizen in current_import:
+        citizen_birth_month = int(citizen.birth_date.split('.')[1])
+        citizen_relatives = [int(item) for item in citizen.relatives.split()]
+        for relative in citizen_relatives:
+            if not (relative in dt[citizen_birth_month].keys()):
+                dt[citizen_birth_month][relative] = 1
+            else:
+                dt[citizen_birth_month][relative] += 1
+    
+    result = {}
+
+    for month in dt.keys():
+        str_month = str(month)
+        result[str_month] = []
+        for citizen in dt[month].keys():
+            result[str_month].append(
+                {
+                    'citizen_id' : citizen,
+                    'presents' : dt[month][citizen]
+                }
+            )
+    return jsonify({'data' : result})
