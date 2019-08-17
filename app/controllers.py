@@ -4,6 +4,8 @@ from validators import validate_import, validate_edit_user
 from app import app
 from models import Import, User
 from serializers import serialize_user
+from utils import calculate_age
+import numpy as np
 
 @app.route('/imports', methods=['POST'])
 def imports():
@@ -145,4 +147,28 @@ def show_presents(import_id):
                     'presents' : dt[month][citizen]
                 }
             )
+    return jsonify({'data' : result}), 200
+
+@app.route('/imports/<import_id>/towns/stat/percentile/age', methods=['GET'])
+def show_towns_percentile(import_id):
+    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+    towns = {}
+
+    for citizen in current_import:
+        citizen_town = citizen.town
+        citizen_age = calculate_age(citizen.birth_date)
+        if not (citizen_town in towns.keys()):
+            towns[citizen_town] = []
+        towns[citizen_town].append(citizen_age)
+    
+    result = []
+    for town in towns.keys():
+        new_stat = {}
+        np_ages = np.array(towns[town])
+        new_stat['town'] = town
+        new_stat['p50'] = round(np.percentile(np_ages, 50, interpolation='linear'), 2)
+        new_stat['p75'] = round(np.percentile(np_ages, 75, interpolation='linear'), 2)
+        new_stat['p99'] = round(np.percentile(np_ages, 99, interpolation='linear'), 2)
+        result.append(new_stat)
+    
     return jsonify({'data' : result}), 200
