@@ -3,40 +3,27 @@ from flask import jsonify, request
 from validators import validate_import, validate_edit_user
 from app import app
 from models import Import, User
-from serializers import serialize_user
-from utils import calculate_age
-import numpy as np
+from serializers import serialize_user_from_model, serialize_users, serialize_user_from_json, serialize_birthday_presents_data, serialize_towns_percentile
 
 @app.route('/imports', methods=['POST'])
 def imports():
-    citizens = request.json['citizens']
-    res = validate_import(citizens)
-    if res == 'OK':
-        imp = Import()
-        db.session.add(imp)
-        #["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"]
+    res = validate_import(request.json) # Результат проверки данных
+
+    if res == 'OK': # Введенные данные корректны
+
+        imp = Import() # Объект выгрузки
+        db.session.add(imp) # Добавление выгрузки в БД
+        db.session.commit()
+        citizens = request.json['citizens']
         for citizen in citizens:
 
-            #Collect data
-
-            citizen_id = citizen['citizen_id']
-            town = citizen['town']
-            street = citizen['street']
-            building = citizen['building']
-            apartment = citizen['apartment']
-            name = citizen['name']
-            birth_date = citizen['birth_date']
-            gender = citizen['gender']
-            relatives = citizen['relatives']
-            relatives = ' '.join(str(item) for item in relatives)
-            new_user = User(citizen_id, town, street, building, apartment, name, birth_date, gender, relatives)
-            new_user.import_group = imp
-            db.session.add(new_user)
+            new_user = serialize_user_from_json(citizen) # Создание жителя из JSON
+            new_user.import_group = imp # Добавление жителя в выгрузку
+            db.session.add(new_user) # Добавление жителя в БД
 
         db.session.commit()
 
         return jsonify({'data': {'import_id' : imp.id}}), 201
-
 
     return jsonify({'data': {'error' : res}}), 400
 
@@ -54,10 +41,12 @@ def edit_user(import_id, citizen_id):
 
     if res == 'OK':
         # Проверка на наличие родственников в выгрузке
+
         for relative in citizen['relatives']:
-            relative_object = current_import.filter(User.citizen_id == relative).first() #Поиск родственника
+            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника
             if relative_object is None: # Если родственник не был найден
                 return jsonify({'data': {'error' : 'В выгрузке нет родственника с citizen_id = ' + str(relative)}}), 400
+
         old_relatives = set(user.relatives.split()) # Родственники до изменения
         new_relatives = set(str(item) for item in citizen['relatives']) # Родственники после изменения
 
@@ -66,9 +55,11 @@ def edit_user(import_id, citizen_id):
 
         for relative in erase_citizen_from:
 
-            relative_object = current_import.filter(User.citizen_id == relative).first()
+            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
+
+            # Удаление жителя из списка его бывших родственников
+
             temp = relative_object.relatives
-            print(temp)
             temp = temp.split()
             temp.remove(str(citizen_id))
             if len(temp) == 0:
@@ -79,12 +70,17 @@ def edit_user(import_id, citizen_id):
             relative_object.relatives = temp
         
         for relative in add_citizen_to:
-            relative_object = current_import.filter(User.citizen_id == relative).first()
-            temp = relative_object.relatives
-            temp += (' ' + citizen_id)
 
+            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
+
+            # Добавление жителя к новым родственникам
+
+            temp = relative_object.relatives 
+            temp += (' ' + citizen_id)
             relative_object.relatives = temp
         
+        # Добавление новых родственников жителю
+
         relatives = ' '.join(str(item) for item in citizen['relatives'])
         user.relatives = relatives
 
@@ -106,69 +102,40 @@ def edit_user(import_id, citizen_id):
             
         db.session.commit()
 
-        return jsonify({'data': serialize_user(user)}), 200
+        return jsonify({'data': serialize_user_from_model(user)}), 200
 
     return jsonify({'data': {'error' : res}}), 400
         
 @app.route('/imports/<import_id>/citizens/', methods=['GET'])
 def show_all_citizens(import_id):
-    result = {'data': []}
+
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
-    for user in current_import:
-        result['data'].append(serialize_user(user))
-    return jsonify(result), 200
+
+    if current_import is None: # Если не удалось найти выгрузку
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
+
+    result = serialize_users(current_import)
+
+    return jsonify({'data':result}), 200
 
 @app.route('/imports/<import_id>/citizens/birthdays', methods=['GET'])
 def show_presents(import_id):
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
 
-    dt = {}
-    for i in range(1,13):
-        dt[i] = {}
-    
-    for citizen in current_import:
-        citizen_birth_month = int(citizen.birth_date.split('.')[1])
-        citizen_relatives = [int(item) for item in citizen.relatives.split()]
-        for relative in citizen_relatives:
-            if not (relative in dt[citizen_birth_month].keys()):
-                dt[citizen_birth_month][relative] = 1
-            else:
-                dt[citizen_birth_month][relative] += 1
-    
-    result = {}
+    if current_import is None: # Если не удалось найти выгрузку
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
 
-    for month in dt.keys():
-        str_month = str(month)
-        result[str_month] = []
-        for citizen in dt[month].keys():
-            result[str_month].append(
-                {
-                    'citizen_id' : citizen,
-                    'presents' : dt[month][citizen]
-                }
-            )
+    result = serialize_birthday_presents_data(current_import)
+
     return jsonify({'data' : result}), 200
 
-@app.route('/imports/<import_id>/towns/stat/percentile/age', methods=['GET'])
+@app.route('/imports/<import_id>/towns/percentile/age', methods=['GET'])
 def show_towns_percentile(import_id):
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
-    towns = {}
 
-    for citizen in current_import:
-        citizen_town = citizen.town
-        citizen_age = calculate_age(citizen.birth_date)
-        if not (citizen_town in towns.keys()):
-            towns[citizen_town] = []
-        towns[citizen_town].append(citizen_age)
-    
-    result = []
-    for town in towns.keys():
-        new_stat = {}
-        np_ages = np.array(towns[town])
-        new_stat['town'] = town
-        new_stat['p50'] = round(np.percentile(np_ages, 50, interpolation='linear'), 2)
-        new_stat['p75'] = round(np.percentile(np_ages, 75, interpolation='linear'), 2)
-        new_stat['p99'] = round(np.percentile(np_ages, 99, interpolation='linear'), 2)
-        result.append(new_stat)
+    if current_import is None: # Если не удалось найти выгрузку
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
+
+    result = serialize_towns_percentile(current_import)
     
     return jsonify({'data' : result}), 200

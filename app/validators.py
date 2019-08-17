@@ -76,9 +76,14 @@ key_to_func = {
         'relatives': check_relatives,
 }
 
-def validate_import(citizens):
-    if len(citizens) == 0:
-        return 'В выгрузке отсутствуют данные' # Проверка на пустой список
+def validate_import(req):
+    if req is None or not 'citizens' in req.keys(): # Проверка на пустой список
+        return 'В выгрузке отсутствуют данные'
+
+    citizens = req['citizens']
+
+    if len(citizens) == 0: # Проверка на пустой список
+        return 'В выгрузке отсутствуют данные'
 
     required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"] # Обязательные ключи
 
