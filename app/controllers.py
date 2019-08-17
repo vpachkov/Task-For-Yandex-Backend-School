@@ -145,4 +145,4 @@ def show_presents(import_id):
                     'presents' : dt[month][citizen]
                 }
             )
-    return jsonify({'data' : result})
+    return jsonify({'data' : result}), 200
