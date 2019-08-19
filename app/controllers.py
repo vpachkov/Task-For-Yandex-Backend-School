@@ -37,7 +37,7 @@ def edit_user(import_id, citizen_id):
     # Проверка формата import_id и citizen_id
     if not (import_id.isdigit() and citizen_id.isdigit()):
         return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
-    
+
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
     user = current_import.filter(User.citizen_id == citizen_id).first() # Поиск нужного жителя
 
@@ -119,6 +119,9 @@ def edit_user(import_id, citizen_id):
         
 @app.route('/imports/<import_id>/citizens/', methods=['GET'])
 def show_all_citizens(import_id):
+    # Проверка формата import_id
+    if not (import_id.isdigit()):
+        return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
 
@@ -131,6 +134,10 @@ def show_all_citizens(import_id):
 
 @app.route('/imports/<import_id>/citizens/birthdays', methods=['GET'])
 def show_presents(import_id):
+    # Проверка формата import_id
+    if not (import_id.isdigit()):
+        return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
+
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
@@ -142,6 +149,10 @@ def show_presents(import_id):
 
 @app.route('/imports/<import_id>/towns/percentile/age', methods=['GET'])
 def show_towns_percentile(import_id):
+    # Проверка формата import_id
+    if not (import_id.isdigit()):
+        return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
+    
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку

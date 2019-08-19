@@ -14,6 +14,81 @@ class TestSerializers(unittest.TestCase):
         self.assertEqual(serialize_relatives_from_list([]), '') #Empty list
         self.assertEqual(serialize_relatives_from_list([1]), '1')
         self.assertEqual(serialize_relatives_from_list([1,211]), '1 211') #Empty list
+    
+    def test_serialize_birthday_presents_data(self):
+        import_group = Import()
+        #citizen_id, town, street, building, apartment, name, birth_date, gender, relatives
+        user_1 = User(1,'Москва', 'Улица', '11', 1, 'Имя1', '21.10.1998', 'male', '1 2 3')
+        user_2 = User(2,'Москва', 'Улица', '11', 1, 'Имя2', '21.09.1998', 'male', '1')
+        user_3 = User(3,'Москва', 'Улица', '11', 1, 'Имя3', '21.11.1998', 'male', '1 2')
+        user_4 = User(4,'Москва', 'Улица', '11', 1, 'Имя4', '21.03.1998', 'male', '')
+        user_5 = User(5,'Москва', 'Улица', '11', 1, 'Имя5', '21.02.1998', 'male', '6')
+        user_6 = User(6,'Москва', 'Улица', '11', 1, 'Имя6', '21.11.1998', 'male', '5 7')
+        user_7 = User(7,'Москва', 'Улица', '11', 1, 'Имя7', '21.02.1998', 'male', '6')
+
+        user_1.import_group = import_group
+        user_2.import_group = import_group
+        user_3.import_group = import_group
+        user_4.import_group = import_group
+        user_5.import_group = import_group
+        user_6.import_group = import_group
+        user_7.import_group = import_group
+
+        correct = {
+            '1' : [],
+            '2' : [
+                {
+                    'citizen_id' : 6,
+                    'presents' : 2
+                }
+            ],
+            '3' : [],
+            '4' : [],
+            '5' : [],
+            '6' : [],
+            '7' : [],
+            '8' : [],
+            '9' : [
+                {
+                    'citizen_id': 1,
+                    'presents': 1
+                }
+            ],
+            '10' : [
+                {
+                    'citizen_id' : 1,
+                    'presents' : 1
+                },
+                {
+                    'citizen_id' : 2,
+                    'presents' : 1
+                },
+                {
+                    'citizen_id' : 3,
+                    'presents' : 1
+                }
+            ],
+            '11' : [
+                {
+                    'citizen_id' : 1,
+                    'presents' : 1
+                },
+                {
+                    'citizen_id' : 2,
+                    'presents' : 1
+                },
+                {
+                    'citizen_id' : 5,
+                    'presents' : 1
+                },
+                {
+                    'citizen_id' : 7,
+                    'presents' : 1
+                }
+            ],
+            '12' : []
+        }
+        self.assertEqual(serialize_birthday_presents_data(import_group.users), correct)
 
 class TestValidators(unittest.TestCase):
     #check auxiliary functions in validators
