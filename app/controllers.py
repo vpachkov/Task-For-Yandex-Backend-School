@@ -34,14 +34,20 @@ def imports():
 
 @app.route('/imports/<import_id>/citizens/<citizen_id>', methods=['PATCH'])
 def edit_user(import_id, citizen_id):
-
+    # Проверка формата import_id и citizen_id
+    if not (import_id.isdigit() and citizen_id.isdigit()):
+        return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
+    
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
     user = current_import.filter(User.citizen_id == citizen_id).first() # Поиск нужного жителя
 
     if user is None: # Если не удалось найти жителя
         return jsonify({'data': {'error' : 'Житель не был найден'}}), 404
+    try:
+        citizen = request.json # Информация о жителе
+    except:
+        return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
 
-    citizen = request.json # Информация о жителе
     res = validate_edit_user(citizen) # Результат проверки данных
 
     if res == 'OK':

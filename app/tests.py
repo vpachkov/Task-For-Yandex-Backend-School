@@ -146,6 +146,61 @@ class TestValidators(unittest.TestCase):
         self.assertEqual(validate_import(empty_citizens_json), uncorrect_json)
         self.assertEqual(validate_import(correct_json), correct_result)
 
+    def test_validate_edit_user(self):
+        empty_error = 'В запросе должно быть указано хотя бы одно поле'
+        extra_error = 'В запросе присутствуют лишние поля'
+        key_error = 'Ошибка в данных о пользователе'
+        correct_result = 'OK'
+
+        # Some JSONs
+        json_with_citizen_id = {
+            "citizen_id": 1, #citizen_id is not allowed
+            "town": "Москва",
+            "street": "Льва Толстого",
+            "building": "16к7стр5",
+            "apartment": 7,
+            "name": "Иванов Иван Иванович",
+            "birth_date": "26.12.1986",
+            "gender": "male",
+            "relatives": [2]
+        }
+
+        empty_json_1 = {
+            
+        }
+
+        extra_error_json = {
+            'random_key' : 'random_value'
+        }
+
+        key_error_json = {
+            "town": "Москва",
+            "street": "Льва Толстого",
+            "building": "16к7стр5",
+            "apartment": 7,
+            "name": " ", # Here
+            "birth_date": "26.12.1986",
+            "gender": "male",
+            "relatives": [2]
+        }
+
+        correct_json = {
+            "town": "Москва",
+            "street": "Льва Толстого",
+            "building": "16к7стр5",
+            "apartment": 7,
+            "name": "Иванов Иван Иванович",
+            "birth_date": "26.12.1986",
+            "gender": "male",
+            "relatives": [2]
+        }
+        # Tests
+
+        self.assertEqual(validate_edit_user(json_with_citizen_id), extra_error)
+        self.assertEqual(validate_edit_user(empty_json_1), empty_error)
+        self.assertEqual(validate_edit_user(extra_error_json), extra_error)
+        self.assertEqual(validate_edit_user(key_error_json), key_error)
+        self.assertEqual(validate_edit_user(correct_json), correct_result)
 
 if __name__ == '__main__':
     unittest.main()
