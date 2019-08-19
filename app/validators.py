@@ -1,4 +1,5 @@
 from datetime import date
+from flask import jsonify, request
 
 # Функция проверки формата даты
 
@@ -27,6 +28,11 @@ def check_town_street_building_name(data):
     if type(data) == str:
         if len(data) == 0:
             return False
+        for symb in data:
+            if symb.isalpha() or symb.isdigit():
+                return True
+        return False
+
     else:
         return False
 
@@ -77,13 +83,17 @@ key_to_func = {
 }
 
 def validate_import(req):
-    if req is None or not 'citizens' in req.keys(): # Проверка на пустой список
-        return 'В выгрузке отсутствуют данные'
+
+    if not(type(req) is dict) or not ('citizens' in req.keys()): # Проверка на пустой список
+        return 'В выгрузке отсутствуют данные / неверный формат'
 
     citizens = req['citizens']
 
+    if not (type(citizens) is list):
+        return 'В выгрузке отсутствуют данные / неверный формат'
+
     if len(citizens) == 0: # Проверка на пустой список
-        return 'В выгрузке отсутствуют данные'
+        return 'В выгрузке отсутствуют данные / неверный формат'
 
     required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"] # Обязательные ключи
 

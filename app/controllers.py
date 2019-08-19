@@ -7,7 +7,12 @@ from serializers import serialize_user_from_model, serialize_users, serialize_us
 
 @app.route('/imports', methods=['POST'])
 def imports():
-    res = validate_import(request.json) # Результат проверки данных
+    try:
+        req = request.json
+    except:
+        return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
+
+    res = validate_import(req) # Результат проверки данных
 
     if res == 'OK': # Введенные данные корректны
 
