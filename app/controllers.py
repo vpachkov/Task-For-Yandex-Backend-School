@@ -113,12 +113,12 @@ def show_all_citizens(import_id):
     except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
-    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+    current_import = Import.query.get(import_id) # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
         return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
 
-    result = serialize_users(current_import)
+    result = serialize_users(current_import.users)
 
     return jsonify({'data':result}), 200
 
