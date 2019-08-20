@@ -35,7 +35,10 @@ def imports():
 @app.route('/imports/<import_id>/citizens/<citizen_id>', methods=['PATCH'])
 def edit_user(import_id, citizen_id):
     # Проверка формата import_id и citizen_id
-    if not (import_id.isdigit() and citizen_id.isdigit()):
+    try:
+        int(import_id)
+        int(citizen_id)
+    except:
         return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
 
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
@@ -120,7 +123,9 @@ def edit_user(import_id, citizen_id):
 @app.route('/imports/<import_id>/citizens/', methods=['GET'])
 def show_all_citizens(import_id):
     # Проверка формата import_id
-    if not (import_id.isdigit()):
+    try:
+        int(import_id)
+    except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
@@ -135,7 +140,9 @@ def show_all_citizens(import_id):
 @app.route('/imports/<import_id>/citizens/birthdays', methods=['GET'])
 def show_presents(import_id):
     # Проверка формата import_id
-    if not (import_id.isdigit()):
+    try:
+        int(import_id)
+    except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
@@ -150,9 +157,11 @@ def show_presents(import_id):
 @app.route('/imports/<import_id>/towns/percentile/age', methods=['GET'])
 def show_towns_percentile(import_id):
     # Проверка формата import_id
-    if not (import_id.isdigit()):
+    try:
+        int(import_id)
+    except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
-    
+
     current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
