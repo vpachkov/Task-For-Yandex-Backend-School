@@ -68,7 +68,6 @@ def edit_user(import_id, citizen_id):
         add_citizen_to = new_relatives - old_relatives # Set из новых родственников
 
         for relative in erase_citizen_from:
-
             relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
 
             # Удаление жителя из списка его бывших родственников
@@ -80,11 +79,10 @@ def edit_user(import_id, citizen_id):
                 temp = ''
             else:
                 temp = ' '.join(vl for vl in temp)
-
             relative_object.relatives = temp
-        
-        for relative in add_citizen_to:
 
+        for relative in add_citizen_to:
+    
             relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
 
             # Добавление жителя к новым родственникам
@@ -96,23 +94,10 @@ def edit_user(import_id, citizen_id):
         # Добавление новых родственников жителю
 
         relatives = ' '.join(str(item) for item in citizen['relatives'])
-        user.relatives = relatives
+        citizen['relatives'] = relatives
 
-        for key in citizen:
-            if key == 'name':
-                user.name = citizen['name']
-            elif key == 'gender':
-                user.gender = citizen['gender']
-            elif key == 'birth_date':
-                user.birth_date = citizen['birth_date']
-            elif key == 'town':
-                user.town = citizen['town']
-            elif key == 'street':
-                user.street = citizen['street']
-            elif key == 'building':
-                user.building = citizen['building']
-            elif key == 'apartment':
-                user.apartment = citizen['apartment']
+        for key, value in citizen.items():
+            setattr(user, key, value) # Обновление полей жителя
             
         db.session.commit()
 
