@@ -3,7 +3,8 @@ from flask import jsonify, request
 from validators import validate_import, validate_edit_user
 from app import app
 from models import Import, User
-from serializers import serialize_user_from_model, serialize_users, serialize_user_from_json, serialize_birthday_presents_data, serialize_towns_percentile
+from serializers import serialize_user_from_model, serialize_users, serialize_user_from_json, serialize_birthday_presents_data, serialize_towns_percentile, serialize_relatives_from_list
+from utils import erase_citizen_from_relatives, add_citizen_to_relatives
 
 @app.route('/imports', methods=['POST'])
 def imports():
@@ -41,8 +42,12 @@ def edit_user(import_id, citizen_id):
     except:
         return jsonify({'data': {'error' : 'В выгрузке отсутствуют данные / неверный формат'}}), 400
 
-    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
-    user = current_import.filter(User.citizen_id == citizen_id).first() # Поиск нужного жителя
+    current_import = Import.query.get(import_id) # Поиск нужной выгрузки
+
+    if current_import is None: # Если не удалось найти выгрузку
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 400
+
+    user = current_import.users.filter(User.citizen_id == citizen_id).first() # Поиск нужного жителя
 
     if user is None: # Если не удалось найти жителя
         return jsonify({'data': {'error' : 'Житель не был найден'}}), 400
@@ -57,7 +62,7 @@ def edit_user(import_id, citizen_id):
         # Проверка на наличие родственников в выгрузке
 
         for relative in citizen['relatives']:
-            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника
+            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника
             if relative_object is None: # Если родственник не был найден
                 return jsonify({'data': {'error' : 'В выгрузке нет родственника с citizen_id = ' + str(relative)}}), 400
 
@@ -68,33 +73,14 @@ def edit_user(import_id, citizen_id):
         add_citizen_to = new_relatives - old_relatives # Set из новых родственников
 
         for relative in erase_citizen_from:
-            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
-
-            # Удаление жителя из списка его бывших родственников
-
-            temp = relative_object.relatives
-            temp = temp.split()
-            temp.remove(str(citizen_id))
-            if len(temp) == 0:
-                temp = ''
-            else:
-                temp = ' '.join(vl for vl in temp)
-            relative_object.relatives = temp
+            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
+            relative_object.relatives = erase_citizen_from_relatives(relative_object.relatives, citizen_id) # Удаление жителя у его бывшего родственника
 
         for relative in add_citizen_to:
-    
-            relative_object = current_import.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
-
-            # Добавление жителя к новым родственникам
-
-            temp = relative_object.relatives 
-            temp += (' ' + citizen_id)
-            relative_object.relatives = temp
+            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
+            relative_object.relatives = add_citizen_to_relatives(relative_object.relatives, citizen_id) # Добавление жителя к новому родственнику
         
-        # Добавление новых родственников жителю
-
-        relatives = ' '.join(str(item) for item in citizen['relatives'])
-        citizen['relatives'] = relatives
+        citizen['relatives'] = serialize_relatives_from_list(citizen['relatives']) # Добавление новых родственников жителю
 
         for key, value in citizen.items():
             setattr(user, key, value) # Обновление полей жителя
@@ -105,7 +91,7 @@ def edit_user(import_id, citizen_id):
 
     return jsonify({'data': {'error' : res}}), 400
         
-@app.route('/imports/<import_id>/citizens/', methods=['GET'])
+@app.route('/imports/<import_id>/citizens', methods=['GET'])
 def show_all_citizens(import_id):
     # Проверка формата import_id
     try:
