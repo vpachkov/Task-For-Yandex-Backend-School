@@ -28,6 +28,8 @@ def check_town_street_building_name(data):
     if type(data) == str:
         if len(data) == 0:
             return False
+        if len(data) > 256:
+            return False
         for symb in data:
             if symb.isalpha() or symb.isdigit():
                 return True
@@ -97,6 +99,7 @@ def validate_import(req):
 
     required_keys = ["citizen_id", "town", "street", "building", "apartment", "name", "birth_date", "gender", "relatives"] # Обязательные ключи
 
+    check_relatives = {}
     for citizen in citizens:
 
         # Проверка наличия ключей
@@ -110,7 +113,25 @@ def validate_import(req):
         for key in citizen.keys():
             if not key_to_func[key](citizen[key]):
                 return 'Ошибка в данных о пользователе'
-    
+        
+        # Проверка двухсторонних связей
+        
+        if not (citizen['citizen_id'] in check_relatives.keys()):
+            check_relatives[citizen['citizen_id']] = len(set(citizen['relatives']))
+        else:
+            check_relatives[citizen['citizen_id']] += len(set(citizen['relatives']))
+        
+        for relative in set(citizen['relatives']):
+            if not (relative in check_relatives.keys()):
+                check_relatives[relative] = -1
+            else:
+                check_relatives[relative] -= 1
+        
+        
+    for key, value in check_relatives.items():
+        if value != 0:
+            return 'Ошибка в данных о пользователе'
+            
     return 'OK' # OK, если ошибки в запросе не были найдены
 
 def validate_edit_user(citizen):

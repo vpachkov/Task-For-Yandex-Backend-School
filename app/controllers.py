@@ -15,7 +15,7 @@ def imports():
     res = validate_import(req) # Результат проверки данных
 
     if res == 'OK': # Введенные данные корректны
-
+        
         imp = Import() # Объект выгрузки
         db.session.add(imp) # Добавление выгрузки в БД
         db.session.commit()
@@ -45,7 +45,7 @@ def edit_user(import_id, citizen_id):
     user = current_import.filter(User.citizen_id == citizen_id).first() # Поиск нужного жителя
 
     if user is None: # Если не удалось найти жителя
-        return jsonify({'data': {'error' : 'Житель не был найден'}}), 404
+        return jsonify({'data': {'error' : 'Житель не был найден'}}), 400
     try:
         citizen = request.json # Информация о жителе
     except:
@@ -116,7 +116,7 @@ def show_all_citizens(import_id):
     current_import = Import.query.get(import_id) # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
-        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 400
 
     result = serialize_users(current_import.users)
 
@@ -130,16 +130,16 @@ def show_presents(import_id):
     except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
-    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+    current_import = Import.query.get(import_id) # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
-        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 400
 
-    result = serialize_birthday_presents_data(current_import)
+    result = serialize_birthday_presents_data(current_import.users)
 
     return jsonify({'data' : result}), 200
 
-@app.route('/imports/<import_id>/towns/percentile/age', methods=['GET'])
+@app.route('/imports/<import_id>/towns/stat/percentile/age', methods=['GET'])
 def show_towns_percentile(import_id):
     # Проверка формата import_id
     try:
@@ -147,11 +147,11 @@ def show_towns_percentile(import_id):
     except:
         return jsonify({'data': {'error' : 'Неверный формат import_id'}}), 400
 
-    current_import = Import.query.get(import_id).users # Поиск нужной выгрузки
+    current_import = Import.query.get(import_id) # Поиск нужной выгрузки
 
     if current_import is None: # Если не удалось найти выгрузку
-        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 404
+        return jsonify({'data': {'error' : 'Не удалось найти выгрузку'}}), 400
 
-    result = serialize_towns_percentile(current_import)
+    result = serialize_towns_percentile(current_import.users)
     
     return jsonify({'data' : result}), 200
