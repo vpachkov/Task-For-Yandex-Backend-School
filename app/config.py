@@ -2,7 +2,7 @@ import os
 
 class DefaultConfig(object):
     DEBUG = False
-    SECRET_KEY = '7EhFJRP7LK'
+    SECRET_KEY = os.environ['SECRET_KEY']
     CSRF_ENABLED = True
     SQLALCHEMY_DATABASE_URI = os.environ['DATABASE_URL']
     SQLALCHEMY_TRACK_MODIFICATIONS = False
