@@ -1,6 +1,7 @@
 import unittest
 from serializers import *
 from validators import *
+from utils import *
 from models import User, Import
 
 class TestSerializers(unittest.TestCase):
@@ -119,16 +120,20 @@ class TestValidators(unittest.TestCase):
         self.assertFalse(check_citizen_id_apartment('21'))
         self.assertFalse(check_citizen_id_apartment(None))
     
-    def test_check_town_street_building_name(self):
-        self.assertTrue(check_town_street_building_name('Льва Толстого'))
-        self.assertTrue(check_town_street_building_name('Простоимя'))
-        self.assertTrue(check_town_street_building_name('11'))
-        self.assertTrue(check_town_street_building_name('Eleven'))
-        self.assertFalse(check_town_street_building_name(''))
-        self.assertFalse(check_town_street_building_name(' '))
-        self.assertFalse(check_town_street_building_name('  '))
-        self.assertFalse(check_town_street_building_name(11))
-        self.assertFalse(check_town_street_building_name(None))
+    def test_check_town_street_building(self):
+        self.assertTrue(check_town_street_building('Льва Толстого'))
+        self.assertFalse(check_town_street_building(''))
+        self.assertFalse(check_town_street_building(' '))
+        self.assertFalse(check_town_street_building('  '))
+        self.assertFalse(check_town_street_building(11))
+        self.assertFalse(check_town_street_building(None))
+
+    def test_check_name(self):
+        self.assertTrue(check_name('Простоимя'))
+        self.assertTrue(check_name('11'))
+        self.assertTrue(check_name('Eleven'))
+        self.assertFalse(check_name(''))
+        self.assertTrue(check_name('@'))
 
     def test_check_relatives(self):
         self.assertTrue(check_relatives([1,2,3]))
@@ -209,6 +214,17 @@ class TestValidators(unittest.TestCase):
                     "birth_date": "26.12.1986",
                     "gender": "male",
                     "relatives": [2]
+                },
+                {
+                    "citizen_id": 2,
+                    "town": "Москва",
+                    "street": "Льва Толстого",
+                    "building": "16к7стр5",
+                    "apartment": 7,
+                    "name": "Иванов Иван Иван",
+                    "birth_date": "26.12.1986",
+                    "gender": "male",
+                    "relatives": [1]
                 }
             ]
         }
@@ -253,7 +269,7 @@ class TestValidators(unittest.TestCase):
             "street": "Льва Толстого",
             "building": "16к7стр5",
             "apartment": 7,
-            "name": " ", # Here
+            "name": "", # Here
             "birth_date": "26.12.1986",
             "gender": "male",
             "relatives": [2]
@@ -277,5 +293,15 @@ class TestValidators(unittest.TestCase):
         self.assertEqual(validate_edit_user(key_error_json), key_error)
         self.assertEqual(validate_edit_user(correct_json), correct_result)
 
+class TestUtils(unittest.TestCase):
+    def test_erase_citizen_from_relatives(self):
+        self.assertEqual(erase_citizen_from_relatives('1 2 3', 1), '2 3')
+        self.assertEqual(erase_citizen_from_relatives('1 2 3', 3), '1 2')
+        self.assertEqual(erase_citizen_from_relatives('1', 1), '')
+
+    def test_add_citizen_to_relatives(self):
+        self.assertEqual(add_citizen_to_relatives('2 3', 1), '2 3 1')
+        self.assertEqual(add_citizen_to_relatives('', 1), '1')
+        self.assertEqual(add_citizen_to_relatives('1', 3), '1 3')
 if __name__ == '__main__':
     unittest.main()

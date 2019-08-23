@@ -1,12 +1,7 @@
 from models import Import, User
 from utils import calculate_age
 from numpy import array, percentile
-
-def serialize_relatives_from_str(relatives):
-    return [int(item) for item in relatives.split()]
-
-def serialize_relatives_from_list(relatives):
-    return ' '.join(str(item) for item in relatives)
+from utils import convert_relatives_from_list_to_str, convert_relatives_from_str_to_list
 
 def serialize_user_from_model(user):
     result = {}
@@ -18,7 +13,7 @@ def serialize_user_from_model(user):
     result['name'] = user.name
     result['birth_date'] = user.birth_date
     result['gender'] = user.gender
-    result['relatives'] = serialize_relatives_from_str(user.relatives)
+    result['relatives'] = convert_relatives_from_str_to_list(user.relatives)
     return result
 
 def serialize_users(import_group):
@@ -36,7 +31,7 @@ def serialize_user_from_json(citizen):
     name = citizen['name']
     birth_date = citizen['birth_date']
     gender = citizen['gender']
-    relatives = serialize_relatives_from_list(citizen['relatives'])
+    relatives = convert_relatives_from_list_to_str(citizen['relatives'])
     return User(citizen_id, town, street, building, apartment, name, birth_date, gender, relatives)
 
 def serialize_birthday_presents_data(import_group):
@@ -46,7 +41,7 @@ def serialize_birthday_presents_data(import_group):
     
     for citizen in import_group:
         citizen_birth_month = int(citizen.birth_date.split('.')[1])
-        citizen_relatives = serialize_relatives_from_str(citizen.relatives)
+        citizen_relatives = convert_relatives_from_str_to_list(citizen.relatives)
         for relative in citizen_relatives:
             if not (relative in dt[citizen_birth_month].keys()):
                 dt[citizen_birth_month][relative] = 1

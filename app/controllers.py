@@ -3,8 +3,8 @@ from flask import jsonify, request
 from validators import validate_import, validate_edit_user
 from app import app
 from models import Import, User
-from serializers import serialize_user_from_model, serialize_users, serialize_user_from_json, serialize_birthday_presents_data, serialize_towns_percentile, serialize_relatives_from_list
-from utils import erase_citizen_from_relatives, add_citizen_to_relatives
+from serializers import serialize_user_from_model, serialize_users, serialize_birthday_presents_data, serialize_towns_percentile
+from citizen_controller import update_users, create_new_import_group
 
 @app.route('/imports', methods=['POST'])
 def imports():
@@ -16,20 +16,7 @@ def imports():
     res = validate_import(req) # Результат проверки данных
 
     if res == 'OK': # Введенные данные корректны
-        
-        imp = Import() # Объект выгрузки
-        db.session.add(imp) # Добавление выгрузки в БД
-        db.session.commit()
-        citizens = request.json['citizens']
-        for citizen in citizens:
-
-            new_user = serialize_user_from_json(citizen) # Создание жителя из JSON
-            new_user.import_group = imp # Добавление жителя в выгрузку
-            db.session.add(new_user) # Добавление жителя в БД
-
-        db.session.commit()
-
-        return jsonify({'data': {'import_id' : imp.id}}), 201
+        return jsonify({'data': {'import_id' : create_new_import_group(req)}}), 201
 
     return jsonify({'data': {'error' : res}}), 400
 
@@ -60,32 +47,12 @@ def edit_user(import_id, citizen_id):
 
     if res == 'OK':
         # Проверка на наличие родственников в выгрузке
-
         for relative in citizen['relatives']:
             relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника
             if relative_object is None: # Если родственник не был найден
                 return jsonify({'data': {'error' : 'В выгрузке нет родственника с citizen_id = ' + str(relative)}}), 400
 
-        old_relatives = set(user.relatives.split()) # Родственники до изменения
-        new_relatives = set(str(item) for item in citizen['relatives']) # Родственники после изменения
-
-        erase_citizen_from = old_relatives - new_relatives # Set из удаленных родственников
-        add_citizen_to = new_relatives - old_relatives # Set из новых родственников
-
-        for relative in erase_citizen_from:
-            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
-            relative_object.relatives = erase_citizen_from_relatives(relative_object.relatives, citizen_id) # Удаление жителя у его бывшего родственника
-
-        for relative in add_citizen_to:
-            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника в выгрузке
-            relative_object.relatives = add_citizen_to_relatives(relative_object.relatives, citizen_id) # Добавление жителя к новому родственнику
-        
-        citizen['relatives'] = serialize_relatives_from_list(citizen['relatives']) # Добавление новых родственников жителю
-
-        for key, value in citizen.items():
-            setattr(user, key, value) # Обновление полей жителя
-            
-        db.session.commit()
+        update_users(current_import, user, citizen) # Обновление жителя и его родственников
 
         return jsonify({'data': serialize_user_from_model(user)}), 200
 

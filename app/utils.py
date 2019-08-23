@@ -1,5 +1,12 @@
 from datetime import date
 
+def convert_relatives_from_list_to_str(relatives):
+    return ' '.join(str(item) for item in relatives)
+
+def convert_relatives_from_str_to_list(relatives):
+    return [int(item) for item in relatives.split()]
+
+
 def calculate_age(citizen_birth_date):
     today = date.today()
     parsed_citizen_birth_date = citizen_birth_date.split('.')
@@ -16,4 +23,6 @@ def erase_citizen_from_relatives(relatives, citizen_id):
     return relatives
 
 def add_citizen_to_relatives(relatives, citizen_id):
-    return relatives + ' ' + citizen_id
+    if len(relatives) == 0:
+        return str(citizen_id)
+    return relatives + ' ' + str(citizen_id)

@@ -22,9 +22,9 @@ def check_citizen_id_apartment(data):
 
     return True
 
-# Функция проверки города, улицы, дома и имени 
+# Функция проверки города, улицы и дома 
 
-def check_town_street_building_name(data):
+def check_town_street_building(data):
     if type(data) == str:
         if len(data) == 0:
             return False
@@ -35,6 +35,19 @@ def check_town_street_building_name(data):
                 return True
         return False
 
+    else:
+        return False
+
+    return True
+
+# Функция проверки имени
+
+def check_name(data):
+    if type(data) == str:
+        if len(data) == 0:
+            return False
+        if len(data) > 256:
+            return False
     else:
         return False
 
@@ -73,10 +86,10 @@ def check_relatives(data):
     return True
 
 key_to_func = {
-        'town' : check_town_street_building_name,
-        'street': check_town_street_building_name,
-        'building': check_town_street_building_name,
-        'name': check_town_street_building_name,
+        'town' : check_town_street_building,
+        'street': check_town_street_building,
+        'building': check_town_street_building,
+        'name': check_name,
         'apartment': check_citizen_id_apartment,
         'citizen_id': check_citizen_id_apartment,
         'birth_date': check_birth_date,
