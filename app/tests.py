@@ -5,16 +5,16 @@ from utils import *
 from models import User, Import
 
 class TestSerializers(unittest.TestCase):
-    def test_serialize_relatives_from_str(self):
-        self.assertEqual(serialize_relatives_from_str(''), []) # Empty string
-        self.assertEqual(serialize_relatives_from_str('1'), [1])
-        self.assertEqual(serialize_relatives_from_str('1 2'), [1, 2])
-        self.assertEqual(serialize_relatives_from_str('1211 211221'), [1211, 211221])
+    def test_convert_relatives_from_str_to_list(self):
+        self.assertEqual(convert_relatives_from_str_to_list(''), []) # Empty string
+        self.assertEqual(convert_relatives_from_str_to_list('1'), [1])
+        self.assertEqual(convert_relatives_from_str_to_list('1 2'), [1, 2])
+        self.assertEqual(convert_relatives_from_str_to_list('1211 211221'), [1211, 211221])
 
-    def test_serialize_relatives_from_list(self):
-        self.assertEqual(serialize_relatives_from_list([]), '') #Empty list
-        self.assertEqual(serialize_relatives_from_list([1]), '1')
-        self.assertEqual(serialize_relatives_from_list([1,211]), '1 211') #Empty list
+    def test_convert_relatives_from_list_to_str(self):
+        self.assertEqual(convert_relatives_from_list_to_str([]), '') #Empty list
+        self.assertEqual(convert_relatives_from_list_to_str([1]), '1')
+        self.assertEqual(convert_relatives_from_list_to_str([1,211]), '1 211') #Empty list
     
     def test_serialize_birthday_presents_data(self):
         import_group = Import()
