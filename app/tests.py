@@ -100,6 +100,7 @@ class TestValidators(unittest.TestCase):
         self.assertFalse(check_date('16.13.2001'))
         self.assertFalse(check_date('16.13.0000'))
         self.assertFalse(check_date('46.11.2001'))
+        self.assertFalse(check_date('16.10.2021'))
 
     def test_check_gender(self):
         self.assertTrue(check_gender('male'))
