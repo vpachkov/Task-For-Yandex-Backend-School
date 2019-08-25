@@ -7,8 +7,7 @@ def check_date(dt):
     try:
         parsed_dt = dt.split('.')
         born = date(int(parsed_dt[2]), int(parsed_dt[1]), int(parsed_dt[0]))
-        today = date.today()
-        return (born.year, born.month, born.day) <= (today.year, today.month, today.day)
+        return born <= date.today()
     except:
         return False
 
