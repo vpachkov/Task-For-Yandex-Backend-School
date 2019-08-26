@@ -46,15 +46,12 @@ def edit_user(import_id, citizen_id):
     res = validate_edit_user(citizen) # Результат проверки данных
 
     if res == 'OK':
-        # Проверка на наличие родственников в выгрузке
-        for relative in citizen['relatives']:
-            relative_object = current_import.users.filter(User.citizen_id == relative).first() # Поиск родственника
-            if relative_object is None: # Если родственник не был найден
-                return jsonify({'data': {'error' : 'В выгрузке нет родственника с citizen_id = ' + str(relative)}}), 400
+        
+        if update_users(current_import, user, citizen): # Обновление жителя и его родственников
 
-        update_users(current_import, user, citizen) # Обновление жителя и его родственников
+            return jsonify({'data': serialize_user_from_model(user)}), 200
 
-        return jsonify({'data': serialize_user_from_model(user)}), 200
+        return jsonify({'data': {'error' : 'В запросе присутствуют лишние родственники'}}), 400
 
     return jsonify({'data': {'error' : res}}), 400
         
