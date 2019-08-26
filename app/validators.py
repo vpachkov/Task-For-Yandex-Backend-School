@@ -6,6 +6,10 @@ from flask import jsonify, request
 def check_date(dt):
     try:
         parsed_dt = dt.split('.')
+        if len(parsed_dt) != 3:
+            return False
+        if len(parsed_dt[2]) != 4 and len(parsed_dt[1]) != 2 and len(parsed_dt) != 2:
+            return False
         born = date(int(parsed_dt[2]), int(parsed_dt[1]), int(parsed_dt[0]))
         return born <= date.today()
     except:
