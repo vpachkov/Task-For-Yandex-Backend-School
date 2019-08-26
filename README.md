@@ -120,6 +120,7 @@ Then, clone project from github repo, create virtual enviroment and install all 
 git clone https://github.com/Plunkerusr/yandex_task.git
 cd yandex_task
 virtualenv -p python3 .env
+source .env/bin/activate
 pip3 install -r requirements/development.txt
 ```
 Create database with your own variables database_name, database_user and database_user_password
